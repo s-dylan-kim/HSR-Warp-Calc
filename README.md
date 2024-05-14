@@ -1,46 +1,12 @@
-# Getting Started with Create React App
+# Honkai Star Rail Warp Calculator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This website calculates the probability distribution of the number of rolls it takes to acquire a given number of rate up 5 stars. It then displays these values in a graph.
 
-## Available Scripts
 
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Rules
+Honkai Star Rail has the following rules for rolling (first value is for characters, second is for Light Cones):
+- base 0.6%/0.8% chance for 5 star
+- starting at roll 74/66, the rate of a 5 star increases by 6%/7%
+- a 5 star is guarenteed by roll 90/80
+- given a 5 star is rolled there is a 56.25%/78.125% chance that the rate up 5 star is rolled
+- if a 5 star is rolled and it is not the rate up 5 star, then the next 5 star is guarenteed to be the rate up
