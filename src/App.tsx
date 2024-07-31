@@ -21,16 +21,22 @@ const CHARACTER_BASE_RATE = 0.006;
 const LIGHT_CONE_BASE_RATE = 0.008;
 const CHARACTER_RATE_UP_CHANCE = 0.5625;
 const LIGHT_CONE_RATE_UP_CHANCE = 0.78125;
+const CHARACTER = true;
+const LIGHT_CONE = false;
 
 
 
 function App() {
-  const [characterSelected, setCharacterSelected] = useState(true);
-  const [count, setCount] = useState("");
-  const [pity, setPity] = useState("");
+  const [calcType, setCalcType] = useState("character");
+  const [characterCount, setCharacterCount] = useState("");
+  const [characterPity, setCharacterPity] = useState("");
+  const [lightConeCount, setLightConeCount] = useState("");
+  const [lightConePity, setLightConePity] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [data, setData] = useState([{roll: 0, percent: 0, cumulativeProb: 0}]);
-  const [guarentee, setGuarentee] = useState(false);
+  const [characterGuarentee, setCharacterGuarentee] = useState(false);
+  const [lightConeGuarentee, setLightConeGuarentee] = useState(false);
+
 
   return (
     <div>
@@ -42,53 +48,95 @@ function App() {
             aria-labelledby="character-lightCone-buttons-group-label"
             defaultValue={true}
             name="character-lightCone-buttons-group"
-            value={characterSelected}
-            onChange={(event) => {setCharacterSelected(event.target.value === "true"); setPity(""); setCount("")}}
+            value={calcType}
+            onChange={(event) => {setCalcType(event.target.value)}}
           >
-            <FormControlLabel value={true} control={<Radio />} label="Character" />
-            <FormControlLabel value={false} control={<Radio />} label="Light Cone" />
+            <FormControlLabel value={"character"} control={<Radio />} label="Character" />
+            <FormControlLabel value={"lightCone"} control={<Radio />} label="Light Cone" />
+            <FormControlLabel value={"both"} control={<Radio />} label="Both" />
           </RadioGroup>
         </FormControl>
 
+        <div id="data-field-container">
+          { (calcType == "character" || calcType == "both") &&
+            <div className="data-field-div">
+              <TextField
+                id="character-count-field"
+                label={"Rate Up Characters (1 - 7)"}
+                value = {characterCount}
+                variant="standard"
+                margin="dense"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  if (event.target.value === "" ||
+                    (event.target.value.length === 1 && event.target.value >= "1" && event.target.value <= "7")
+                  ) {
+                    setCharacterCount(event.target.value);
+                  }
+                }}
+              />
+              <TextField
+                id="character-pity-field"
+                label="Pity"
+                value = {characterPity}
+                variant="standard"
+                margin="dense"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setCharacterPity(event.target.value);
+                }}
+              />
+              <FormControlLabel control={
+                <Checkbox 
+                  defaultChecked
+                  checked={characterGuarentee}
+                  onChange={() => setCharacterGuarentee(!characterGuarentee)}
+                />}
+                label="Guarentee"
+              />
+            </div>
+          }
 
-        <TextField
-          id="count-field"
-          label={characterSelected ? "Rate Up Characters (1 - 7)" : "Rate Up Light Cones (1 - 5)"}
-          value = {count}
-          variant="standard"
-          margin="dense"
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            if (event.target.value === "" ||
-              (event.target.value.length === 1 && event.target.value >= "1" && ((characterSelected && event.target.value <= "7") || event.target.value <= "5"))
-            ) {
-              setCount(event.target.value);
-            }
-          }}
-        />
-        <TextField
-          id="lc-field"
-          label="Pity"
-          value = {pity}
-          variant="standard"
-          margin="dense"
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setPity(event.target.value);
-          }}
-        />
-
-        <FormControlLabel control={
-          <Checkbox 
-            defaultChecked
-            checked={guarentee}
-            onChange={() => setGuarentee(!guarentee)}
-          />}
-          label="Guarentee"
-        />
+          { (calcType == "lightCone" || calcType == "both") &&
+            <div className="data-field-div">
+              <TextField
+                id="light-cone-count-field"
+                label={"Rate Up Light Cones (1 - 5)"}
+                value = {lightConeCount}
+                variant="standard"
+                margin="dense"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  if (event.target.value === "" ||
+                    (event.target.value.length === 1 && event.target.value >= "1" && event.target.value <= "5")
+                  ) {
+                    setLightConeCount(event.target.value);
+                  }
+                }}
+              />
+              <TextField
+                id="lc-pity-field"
+                label="Pity"
+                value = {lightConePity}
+                variant="standard"
+                margin="dense"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setLightConePity(event.target.value);
+                }}
+              />
+              <FormControlLabel control={
+                <Checkbox 
+                  defaultChecked
+                  checked={lightConeGuarentee}
+                  onChange={() => setLightConeGuarentee(!lightConeGuarentee)}
+                />}
+                label="Guarentee"
+              />
+            </div>
+          }
+        </div>
 
         <Button
           id="calc-button"
           variant="contained"
-          onClick={() => calcDists(characterSelected, Number(count), Number(pity), guarentee)}
+          onClick={() => calcDists(calcType, Number(characterCount), Number(characterPity), characterGuarentee, Number(lightConeCount), Number(lightConePity), lightConeGuarentee)}
         >
           Calculate
         </Button>
@@ -128,30 +176,60 @@ function App() {
     </div>
   );
 
-  function calcDists(isCharacter: boolean, needed:number, pity: number, guarentee: boolean) {
+  function calcDists(type: string, characterCount: number, characterPity: number, characterGuarentee: boolean, lightConeCount: number, lightConePity: number, lightConeGuarentee: boolean ) {
     setData([]);
 
-    let guarenteedOdds = getDist(isCharacter, 0);
-    let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, isCharacter);
-  
-    let baseDist = getDist(isCharacter, pity);
+    let characterCalc = (type == "character" || type == "both");
+    let lightConeCalc = (type == "lightCone" || type == "both");
 
-    if (!guarentee) {
-      baseDist = addDists(baseDist, guarenteedOdds, false, isCharacter);
+    let result = [1.0];
+
+    if (characterCalc) {
+      let guarenteedOdds = getDist(CHARACTER, 0);
+      let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, CHARACTER);
+    
+      let characterDist = getDist(CHARACTER, characterPity);
+
+      if (!characterGuarentee) {
+        characterDist = addDists(characterDist, guarenteedOdds, false, CHARACTER);
+      }
+
+      for (let obtained = 1; obtained < characterCount; obtained++) {
+        characterDist = addDists(characterDist, nonGuarenteedOdds, true, CHARACTER);
+      }
+
+      result = addDists(result, characterDist, true, CHARACTER);
     }
 
-    for (let obtained = 1; obtained < needed; obtained++) {
-      baseDist = addDists(baseDist, nonGuarenteedOdds, true, isCharacter);
+    if (lightConeCalc) {
+      let guarenteedOdds = getDist(LIGHT_CONE, 0);
+      let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, LIGHT_CONE);
+    
+      let lightConeDist = getDist(LIGHT_CONE, lightConePity);
+
+      if (!lightConeGuarentee) {
+        lightConeDist = addDists(lightConeDist, guarenteedOdds, false, LIGHT_CONE);
+      }
+
+      for (let obtained = 1; obtained < lightConeCount; obtained++) {
+        lightConeDist = addDists(lightConeDist, nonGuarenteedOdds, true, LIGHT_CONE);
+      }
+
+      result = addDists(result, lightConeDist, true, LIGHT_CONE);
     }
-  
+    
     let cumulativeProbVals: number[] = [];
     let cumulativeProbVal: number = 0;
 
-    for (let i = 0; i < baseDist.length; i++) {
-      cumulativeProbVal = (baseDist[i] * 100) + cumulativeProbVal;
+    // result = addDists([0.5, 0.2, 0.1, 0.2], [0.3, 0.4, 0, 0.3], true, CHARACTER);
+    
+    for (let i = 0; i < result.length; i++) {
+      cumulativeProbVal = (result[i] * 100) + cumulativeProbVal;
       cumulativeProbVals[i] = cumulativeProbVal;
-      setData((old) => [...old, {roll: i, percent: baseDist[i] * 100, cumulativeProb: cumulativeProbVals[i]}]);
+      setData((old) => [...old, {roll: i, percent: result[i] * 100, cumulativeProb: cumulativeProbVals[i]}]);
     }
+
+    
 
     setShowResults(true);
   }
