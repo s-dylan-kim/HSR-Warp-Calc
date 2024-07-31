@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/HSR-Warp-Calc/static/css/main.d738d8d3.css",
-    "main.js": "/HSR-Warp-Calc/static/js/main.139d3e4a.js",
+    "main.css": "/HSR-Warp-Calc/static/css/main.9d42e488.css",
+    "main.js": "/HSR-Warp-Calc/static/js/main.0bdbb4f5.js",
     "static/js/453.a88451f3.chunk.js": "/HSR-Warp-Calc/static/js/453.a88451f3.chunk.js",
     "static/media/roboto-latin-500-normal.woff2": "/HSR-Warp-Calc/static/media/roboto-latin-500-normal.f25d774ecfe0996f8eb5.woff2",
     "static/media/roboto-latin-700-normal.woff2": "/HSR-Warp-Calc/static/media/roboto-latin-700-normal.227c93190fe7f82de3f8.woff2",
@@ -60,12 +60,12 @@
     "static/media/roboto-greek-ext-400-normal.woff": "/HSR-Warp-Calc/static/media/roboto-greek-ext-400-normal.f708607d2a7290fb8bfa.woff",
     "static/media/roboto-greek-ext-700-normal.woff": "/HSR-Warp-Calc/static/media/roboto-greek-ext-700-normal.249853776d22a271b2b5.woff",
     "index.html": "/HSR-Warp-Calc/index.html",
-    "main.d738d8d3.css.map": "/HSR-Warp-Calc/static/css/main.d738d8d3.css.map",
-    "main.139d3e4a.js.map": "/HSR-Warp-Calc/static/js/main.139d3e4a.js.map",
+    "main.9d42e488.css.map": "/HSR-Warp-Calc/static/css/main.9d42e488.css.map",
+    "main.0bdbb4f5.js.map": "/HSR-Warp-Calc/static/js/main.0bdbb4f5.js.map",
     "453.a88451f3.chunk.js.map": "/HSR-Warp-Calc/static/js/453.a88451f3.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.d738d8d3.css",
-    "static/js/main.139d3e4a.js"
+    "static/css/main.9d42e488.css",
+    "static/js/main.0bdbb4f5.js"
   ]
 }
