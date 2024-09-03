@@ -200,42 +200,53 @@ function App() {
     let result = [1.0];
 
     if (characterCalc) {
+      // get odds of character with 0 for both guarenteed and non-guarenteed
       let guarenteedOdds = getDist(GATCHA_TYPE.CHARACTER, 0);
       let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, GATCHA_TYPE.CHARACTER);
     
+      // get distribution for first 5 star from current state
       let characterDist = getDist(GATCHA_TYPE.CHARACTER, characterPity);
 
+      // if not guarenteed append chance of losing rate up
       if (!characterGuarentee) {
         characterDist = addDists(characterDist, guarenteedOdds, false, GATCHA_TYPE.CHARACTER);
       }
 
+      // add to distribution if more than 1 rate up 5 star is desired
       for (let obtained = 1; obtained < characterCount; obtained++) {
         characterDist = addDists(characterDist, nonGuarenteedOdds, true, GATCHA_TYPE.CHARACTER);
       }
 
+      // add the distribution to the final result
       result = addDists(result, characterDist, true, GATCHA_TYPE.CHARACTER);
     }
 
     if (lightConeCalc) {
+      // get odds of light cone with 0 for both guarenteed and non-guarenteed
       let guarenteedOdds = getDist(GATCHA_TYPE.LIGHT_CONE, 0);
       let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, GATCHA_TYPE.LIGHT_CONE);
     
+      // get distribution for first 5 star from current state
       let lightConeDist = getDist(GATCHA_TYPE.LIGHT_CONE, lightConePity);
 
+      // if not guarenteed append chance of losing rate up
       if (!lightConeGuarentee) {
         lightConeDist = addDists(lightConeDist, guarenteedOdds, false, GATCHA_TYPE.LIGHT_CONE);
       }
 
+      // add to distribution if more than 1 rate up 5 star is desired
       for (let obtained = 1; obtained < lightConeCount; obtained++) {
         lightConeDist = addDists(lightConeDist, nonGuarenteedOdds, true, GATCHA_TYPE.LIGHT_CONE);
       }
 
+      // add the distribution to the final result
       result = addDists(result, lightConeDist, true, GATCHA_TYPE.LIGHT_CONE);
     }
     
     let cumulativeProbVals: number[] = [];
     let cumulativeProbVal: number = 0;
     
+    // calculate the cumulative probability values and append to data list which will be sent to graph library
     for (let i = 0; i < result.length; i++) {
       cumulativeProbVal = (result[i] * 100) + cumulativeProbVal;
       cumulativeProbVals[i] = cumulativeProbVal;
@@ -258,12 +269,13 @@ function App() {
   
     let result: number[] = [];
   
+    // some pseudo convolution thing
     for (let i1 = 0; i1 < firstRolls.length; i1++) {
       if (result.length <= i1) {
         result.push(0);
       }
       result[i1] += firstRolls[i1] * rateUpChance;
-  
+
       let lostPityChance = (1 - rateUpChance) * firstRolls[i1];
       for (let i2 = 0; i2 < secondRolls.length; i2++) {
         if (result.length <= i1 + i2) {
