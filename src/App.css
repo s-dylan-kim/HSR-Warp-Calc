@@ -1,6 +1,8 @@
-#selector {
+
+#input-div {
     padding-top: 5%;
-    /* width: 50%; */
+    padding-bottom: 5%;
+    width: 75%;
     margin: auto;
 
     display: flex;
@@ -21,10 +23,11 @@
 }
 
 #calc-button {
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 10px;
 }
 
 #roll-graph {
-    flex-basis: 100%;
+    width: 100%;
+    overflow: hidden;
 }

@@ -8,22 +8,25 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label, ResponsiveContainer } from 'recharts';
+import CustomTooltip from './graph-tooltip';
+import Header from './header'
 import './App.css';
 
 
-const CHARACTER_PITY = 90;
+const CHARACTER_PITY = 90; // number of pulls to guarentee a 5 star
 const LIGHT_CONE_PITY = 80;
 const CHARACTER_SOFT_PITY_THRESHOLD = 74; // how many pulls before hard pity does soft pity start
 const LIGHT_CONE_SOFT_PITY_THRESHOLD = 66;
 const CHARACTER_SOFT_PITY_SCALING = 0.06; // how much chance increases per pull in soft pity
 const LIGHT_CONE_SOFT_PITY_SCALING = 0.07;
-const CHARACTER_BASE_RATE = 0.006;
+const CHARACTER_BASE_RATE = 0.006; // base odds of a 5 star
 const LIGHT_CONE_BASE_RATE = 0.008;
-const CHARACTER_RATE_UP_CHANCE = 0.5625;
+const CHARACTER_RATE_UP_CHANCE = 0.5625; // given a 5 star is pulled, the chance for the rate up to drop
 const LIGHT_CONE_RATE_UP_CHANCE = 0.78125;
-const CHARACTER = true;
-const LIGHT_CONE = false;
-
+const enum GATCHA_TYPE {
+  CHARACTER = 1,
+  LIGHT_CONE = 0
+}
 
 
 function App() {
@@ -39,8 +42,9 @@ function App() {
 
 
   return (
-    <div>
-      <div id="selector">
+    <div id="wrapper-div">
+      <Header/>
+      <div id="input-div">
         <FormControl>
           <FormLabel id="character-lightCone-buttons-group-label">What Are You Rolling For?</FormLabel>
           <RadioGroup
@@ -132,7 +136,6 @@ function App() {
             </div>
           }
         </div>
-
         <Button
           id="calc-button"
           variant="contained"
@@ -140,41 +143,47 @@ function App() {
         >
           Calculate
         </Button>
-
-        { showResults &&
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart
-              id="roll-graph"
-              width={1000}
-              height={400}
-              data={data}
-              margin={{
-                top: 10,
-                right: 90,
-                left: 30,
-                bottom: 10,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="roll">
-                <Label value="Rolls" offset={-3} position="bottom" />
-              </XAxis>
-              <YAxis yAxisId="left" >
-                {/* <Label value="Chance" offset={-20} position="insideLeft" /> */}
-              </YAxis>
-              <YAxis yAxisId="right" orientation="right" width={1} >
-                {/* <Label value="Cumulative Chance" offset={-120} position="insideRight" /> */}
-              </YAxis>
-              <Tooltip/>
-              <Legend verticalAlign="top" align="center" layout="horizontal" wrapperStyle={{top: 0, left: 62}} />
-              <Line yAxisId="right" type="monotone" dataKey="cumulativeProb" stroke="#ff7300" dot={false} />
-              <Area yAxisId="left" type="monotone" dataKey="percent" stroke="#8884d8" fill="#8884d8" />
-            </ComposedChart>
-          </ResponsiveContainer>
-        }
       </div>
+      
+      { showResults &&
+        <ResponsiveContainer width="100%" height={400}>
+          <ComposedChart
+            id="roll-graph"
+            width={1000}
+            height={400}
+            data={data}
+
+            margin={{
+              top: 10,
+              right: 90,
+              left: 30,
+              bottom: 10,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="roll">
+              <Label value="Rolls" offset={-3} position="bottom" />
+            </XAxis>
+            <YAxis yAxisId="left" >
+              {/* <Label value="Chance" offset={-20} position="insideLeft" /> */}
+            </YAxis>
+            <YAxis yAxisId="right" orientation="right" width={1} >
+              {/* <Label value="Cumulative Chance" offset={-120} position="insideRight" /> */}
+            </YAxis>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend verticalAlign="top" align="center" layout="horizontal" wrapperStyle={{top: 0, left: 62}} formatter={(value) => <span>{value == "cumulativeProb" ? "Cumulative Probability" : "Probability"}</span>}/>
+            <Line yAxisId="right" type="monotone" dataKey="cumulativeProb" stroke="#ff7300" dot={false} />
+            <Area yAxisId="left" type="monotone" dataKey="percent" stroke="#8884d8" fill="#8884d8" />
+          </ComposedChart>
+        </ResponsiveContainer>
+      }
     </div>
+
   );
+
+  
+
+
 
   function calcDists(type: string, characterCount: number, characterPity: number, characterGuarentee: boolean, lightConeCount: number, lightConePity: number, lightConeGuarentee: boolean ) {
     setData([]);
@@ -185,43 +194,41 @@ function App() {
     let result = [1.0];
 
     if (characterCalc) {
-      let guarenteedOdds = getDist(CHARACTER, 0);
-      let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, CHARACTER);
+      let guarenteedOdds = getDist(GATCHA_TYPE.CHARACTER, 0);
+      let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, GATCHA_TYPE.CHARACTER);
     
-      let characterDist = getDist(CHARACTER, characterPity);
+      let characterDist = getDist(GATCHA_TYPE.CHARACTER, characterPity);
 
       if (!characterGuarentee) {
-        characterDist = addDists(characterDist, guarenteedOdds, false, CHARACTER);
+        characterDist = addDists(characterDist, guarenteedOdds, false, GATCHA_TYPE.CHARACTER);
       }
 
       for (let obtained = 1; obtained < characterCount; obtained++) {
-        characterDist = addDists(characterDist, nonGuarenteedOdds, true, CHARACTER);
+        characterDist = addDists(characterDist, nonGuarenteedOdds, true, GATCHA_TYPE.CHARACTER);
       }
 
-      result = addDists(result, characterDist, true, CHARACTER);
+      result = addDists(result, characterDist, true, GATCHA_TYPE.CHARACTER);
     }
 
     if (lightConeCalc) {
-      let guarenteedOdds = getDist(LIGHT_CONE, 0);
-      let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, LIGHT_CONE);
+      let guarenteedOdds = getDist(GATCHA_TYPE.LIGHT_CONE, 0);
+      let nonGuarenteedOdds = addDists(guarenteedOdds, guarenteedOdds, false, GATCHA_TYPE.LIGHT_CONE);
     
-      let lightConeDist = getDist(LIGHT_CONE, lightConePity);
+      let lightConeDist = getDist(GATCHA_TYPE.LIGHT_CONE, lightConePity);
 
       if (!lightConeGuarentee) {
-        lightConeDist = addDists(lightConeDist, guarenteedOdds, false, LIGHT_CONE);
+        lightConeDist = addDists(lightConeDist, guarenteedOdds, false, GATCHA_TYPE.LIGHT_CONE);
       }
 
       for (let obtained = 1; obtained < lightConeCount; obtained++) {
-        lightConeDist = addDists(lightConeDist, nonGuarenteedOdds, true, LIGHT_CONE);
+        lightConeDist = addDists(lightConeDist, nonGuarenteedOdds, true, GATCHA_TYPE.LIGHT_CONE);
       }
 
-      result = addDists(result, lightConeDist, true, LIGHT_CONE);
+      result = addDists(result, lightConeDist, true, GATCHA_TYPE.LIGHT_CONE);
     }
     
     let cumulativeProbVals: number[] = [];
     let cumulativeProbVal: number = 0;
-
-    // result = addDists([0.5, 0.2, 0.1, 0.2], [0.3, 0.4, 0, 0.3], true, CHARACTER);
     
     for (let i = 0; i < result.length; i++) {
       cumulativeProbVal = (result[i] * 100) + cumulativeProbVal;
@@ -229,12 +236,10 @@ function App() {
       setData((old) => [...old, {roll: i, percent: result[i] * 100, cumulativeProb: cumulativeProbVals[i]}]);
     }
 
-    
-
     setShowResults(true);
   }
   
-  function addDists(firstRolls: number[], secondRolls: number[], guarenteeFail: boolean, isCharacter: boolean) {
+  function addDists(firstRolls: number[], secondRolls: number[], guarenteeFail: boolean, isCharacter: number) {
     let rateUpChance = guarenteeFail ? 0 : (isCharacter ? CHARACTER_RATE_UP_CHANCE : LIGHT_CONE_RATE_UP_CHANCE);
   
     let result: number[] = [];
@@ -257,7 +262,7 @@ function App() {
     return result;
   }
   
-  function getDist(isCharacter: boolean, pity: number) {
+  function getDist(isCharacter: number, pity: number) {
     let cur: number[] = [];
     
     let hardPity = isCharacter ? CHARACTER_PITY : LIGHT_CONE_PITY;
