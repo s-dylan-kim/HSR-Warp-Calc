@@ -181,10 +181,16 @@ function App() {
 
   );
 
-  
-
-
-
+  // params:
+  // type: "character" for just character, "lightcone" for just light cone, "both" for both
+  // characterCount: how many characters are desired
+  // characterPity: what is the starting pity on the character banner
+  // characterGuarentee: is character guarenteed on next pull
+  // lightConeCount: how many light cones are desired
+  // lightConePity: what is the starting pity on the lightCone banner
+  // lightConeGuarentee: is light cone guarenteed on next pull
+  // returns:
+  // list of chances of obtaining everything outlined, with value at index i being the chance
   function calcDists(type: string, characterCount: number, characterPity: number, characterGuarentee: boolean, lightConeCount: number, lightConePity: number, lightConeGuarentee: boolean ) {
     setData([]);
 
@@ -239,6 +245,14 @@ function App() {
     setShowResults(true);
   }
   
+  // params:
+  // firstRolls: first distribution to be added
+  // secondRolls: second distribution to be added
+  // guarenteeFail: if true, use the rateup chance to determine if we stop with first success or go on to second distribution to wait until second success
+  //                if false, always require first distribution to proc followed by second
+  // isCharacter: 1 for character, 0 for light cone
+  // returns:
+  // the resulting combined distribution
   function addDists(firstRolls: number[], secondRolls: number[], guarenteeFail: boolean, isCharacter: number) {
     let rateUpChance = guarenteeFail ? 0 : (isCharacter ? CHARACTER_RATE_UP_CHANCE : LIGHT_CONE_RATE_UP_CHANCE);
   
@@ -262,6 +276,11 @@ function App() {
     return result;
   }
   
+  // params:
+  // isCharacter: 1 for character, 0 for light cone
+  // pity: what is the starting pity
+  // returns:
+  // distribution of first 5 star for given type with a given starting pity
   function getDist(isCharacter: number, pity: number) {
     let cur: number[] = [];
     
@@ -273,14 +292,16 @@ function App() {
     let prevProb = 1;
   
     cur.push(0);
+
+    // everythink is multiplied by prevprob since we are calcing the chance of hitting on that pull
     for (let pullCnt = pity + 1; pullCnt <= hardPity; pullCnt++) {
-      if (pullCnt === hardPity) {
+      if (pullCnt === hardPity) { // if hit hard pity 100% chance
         cur.push(prevProb);
-      } else if (pullCnt < softPityThreshold) {
+      } else if (pullCnt < softPityThreshold) { // if before soft pity, jsut base rate
         cur.push(prevProb * baseRate);
         prevProb = prevProb * (1 - baseRate);
       } else {
-        cur.push(prevProb * (baseRate + (pullCnt - softPityThreshold + 1) * softPityScaling));
+        cur.push(prevProb * (baseRate + (pullCnt - softPityThreshold + 1) * softPityScaling)); // calc soft pity rate
         prevProb = prevProb * (1 - (baseRate + (pullCnt - softPityThreshold + 1) * softPityScaling));
       }
     }
